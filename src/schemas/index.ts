@@ -48,3 +48,13 @@ export const CreateIssueInputSchema = z.object({
         .max(10000, "El body no puede superar los 10000 caracteres.")
         .optional(),
 });
+
+export const ListIssuesInputSchema = z.object({
+    owner: z
+        .string()
+        .min(1, "El propietario del repositorio es obligatorio."),
+
+    repo: z
+        .string()
+        .min(1, "El nombre del repositorio es obligatorio."),
+});

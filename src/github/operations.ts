@@ -54,3 +54,21 @@ export async function createIssue(
         url: response.data.html_url,
     };
 }
+
+export async function listIssues(
+    owner: string,
+    repo: string
+) {
+    const response = await octokit.issues.listForRepo({
+        owner,
+        repo,
+        state: "open",
+    });
+
+    return response.data.map((issue) => ({
+        number: issue.number,
+        title: issue.title,
+        body: issue.body,
+        url: issue.html_url,
+    }));
+}
