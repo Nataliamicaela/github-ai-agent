@@ -33,3 +33,24 @@ export async function createRepository(
         html_url: response.data.html_url,
     };
 }
+
+export async function createIssue(
+    owner: string,
+    repo: string,
+    title: string,
+    body?: string
+) {
+    const response = await octokit.issues.create({
+        owner,
+        repo,
+        title,
+        body,
+    });
+
+    return {
+        number: response.data.number,
+        title: response.data.title,
+        body: response.data.body,
+        url: response.data.html_url,
+    };
+}

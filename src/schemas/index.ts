@@ -28,3 +28,23 @@ export const CreateRepositoryInputSchema = z.object({
 
     private: z.boolean().optional(),
 });
+
+export const CreateIssueInputSchema = z.object({
+    owner: z
+        .string()
+        .min(1, "El propietario del repositorio es obligatorio."),
+
+    repo: z
+        .string()
+        .min(1, "El nombre del repositorio es obligatorio."),
+
+    title: z
+        .string()
+        .min(1, "El título del issue es obligatorio.")
+        .max(256, "El título no puede superar los 256 caracteres."),
+
+    body: z
+        .string()
+        .max(10000, "El body no puede superar los 10000 caracteres.")
+        .optional(),
+});

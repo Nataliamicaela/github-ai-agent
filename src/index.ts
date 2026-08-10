@@ -8,17 +8,23 @@ import { z } from "zod";
 
 import {
     CreateRepositoryInputSchema,
+    CreateIssueInputSchema,
     SumInputSchema,
     SlugifyInputSchema,
 } from "./schemas/index.js";
 
-import { listRepositories, createRepository } from "./github/operations.js";
+import {
+    listRepositories,
+    createRepository,
+    createIssue,
+} from "./github/operations.js";
 
 import { pingTool } from "./tools/ping.js";
 import { sumTool } from "./tools/sum.js";
 import { slugifyTool } from "./tools/slugify.js";
 import { listRepositoriesTool } from "./tools/list-repositories.js";
 import { createRepositoryTool } from "./tools/create-repository.js";
+import { createIssueTool } from "./tools/create-issue.js";
 
 export const PingInputSchema = z.object({});
 
@@ -43,6 +49,7 @@ async function main() {
                 slugifyTool,
                 listRepositoriesTool,
                 createRepositoryTool,
+                createIssueTool,
             ],
         };
     });
@@ -191,6 +198,55 @@ async function main() {
                         {
                             type: "text",
                             text: "No se pudo crear el repositorio de GitHub.",
+                        },
+                    ],
+                    isError: true,
+                };
+            }
+        }
+
+        if (name === "create_issue") {
+            const result = CreateIssueInputSchema.safeParse(args);
+
+            if (!result.success) {
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: "Los datos del issue no son válidos.",
+                        },
+                    ],
+                    isError: true,
+                };
+            }
+
+            try {
+                const issue = await createIssue(
+                    result.data.owner,
+                    result.data.repo,
+                    result.data.title,
+                    result.data.body
+                );
+
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: JSON.stringify(issue),
+                        },
+                    ],
+                };
+            } catch (error) {
+                console.error(
+                    "[github] Error al crear issue:",
+                    error instanceof Error ? error.message : error
+                );
+
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: "No se pudo crear el issue de GitHub.",
                         },
                     ],
                     isError: true,
