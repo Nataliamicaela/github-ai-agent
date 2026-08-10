@@ -72,3 +72,21 @@ export async function listIssues(
         url: issue.html_url,
     }));
 }
+
+export async function listPullRequests(
+    owner: string,
+    repo: string
+) {
+    const response = await octokit.pulls.list({
+        owner,
+        repo,
+        state: "open",
+    });
+
+    return response.data.map((pullRequest) => ({
+        number: pullRequest.number,
+        title: pullRequest.title,
+        body: pullRequest.body,
+        url: pullRequest.html_url,
+    }));
+}

@@ -10,6 +10,7 @@ import {
     CreateRepositoryInputSchema,
     CreateIssueInputSchema,
     ListIssuesInputSchema,
+    ListPullRequestsInputSchema,
     SumInputSchema,
     SlugifyInputSchema,
 } from "./schemas/index.js";
@@ -19,6 +20,7 @@ import {
     createRepository,
     createIssue,
     listIssues,
+    listPullRequests,
 } from "./github/operations.js";
 
 import { pingTool } from "./tools/ping.js";
@@ -28,6 +30,7 @@ import { listRepositoriesTool } from "./tools/list-repositories.js";
 import { createRepositoryTool } from "./tools/create-repository.js";
 import { createIssueTool } from "./tools/create-issue.js";
 import { listIssuesTool } from "./tools/list-issues.js";
+import { listPullRequestsTool } from "./tools/list-pull-requests.js";
 
 export const PingInputSchema = z.object({});
 
@@ -54,6 +57,7 @@ async function main() {
                 createRepositoryTool,
                 createIssueTool,
                 listIssuesTool,
+                listPullRequestsTool,
             ],
         };
     });
@@ -298,6 +302,53 @@ async function main() {
                         {
                             type: "text",
                             text: "No se pudieron obtener los issues de GitHub.",
+                        },
+                    ],
+                    isError: true,
+                };
+            }
+        }
+
+        if (name === "list_pull_requests") {
+            const result = ListPullRequestsInputSchema.safeParse(args);
+
+            if (!result.success) {
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: "Los datos del repositorio no son válidos.",
+                        },
+                    ],
+                    isError: true,
+                };
+            }
+
+            try {
+                const pullRequests = await listPullRequests(
+                    result.data.owner,
+                    result.data.repo
+                );
+
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: JSON.stringify(pullRequests),
+                        },
+                    ],
+                };
+            } catch (error) {
+                console.error(
+                    "[github] Error al listar Pull Requests:",
+                    error instanceof Error ? error.message : error
+                );
+
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: "No se pudieron obtener los Pull Requests de GitHub.",
                         },
                     ],
                     isError: true,

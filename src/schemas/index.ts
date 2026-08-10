@@ -58,3 +58,13 @@ export const ListIssuesInputSchema = z.object({
         .string()
         .min(1, "El nombre del repositorio es obligatorio."),
 });
+
+export const ListPullRequestsInputSchema = z.object({
+    owner: z
+        .string()
+        .min(1, "El propietario del repositorio es obligatorio."),
+
+    repo: z
+        .string()
+        .min(1, "El nombre del repositorio es obligatorio."),
+});
