@@ -11,6 +11,8 @@ import {
     CreateIssueInputSchema,
     ListIssuesInputSchema,
     ListPullRequestsInputSchema,
+    CreatePullRequestInputSchema,
+    CreateCommitInputSchema,
     SumInputSchema,
     SlugifyInputSchema,
 } from "./schemas/index.js";
@@ -21,6 +23,8 @@ import {
     createIssue,
     listIssues,
     listPullRequests,
+    createPullRequest,
+    createCommit,
 } from "./github/operations.js";
 
 import { pingTool } from "./tools/ping.js";
@@ -31,6 +35,8 @@ import { createRepositoryTool } from "./tools/create-repository.js";
 import { createIssueTool } from "./tools/create-issue.js";
 import { listIssuesTool } from "./tools/list-issues.js";
 import { listPullRequestsTool } from "./tools/list-pull-requests.js";
+import { createPullRequestTool } from "./tools/create-pull-request.js";
+import { createCommitTool } from "./tools/create-commit.js";
 
 export const PingInputSchema = z.object({});
 
@@ -58,6 +64,8 @@ async function main() {
                 createIssueTool,
                 listIssuesTool,
                 listPullRequestsTool,
+                createPullRequestTool,
+                createCommitTool,
             ],
         };
     });
@@ -349,6 +357,109 @@ async function main() {
                         {
                             type: "text",
                             text: "No se pudieron obtener los Pull Requests de GitHub.",
+                        },
+                    ],
+                    isError: true,
+                };
+            }
+        }
+
+        if (name === "create_pull_request") {
+            const result = CreatePullRequestInputSchema.safeParse(args);
+
+            if (!result.success) {
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: "Los datos del Pull Request no son válidos.",
+                        },
+                    ],
+                    isError: true,
+                };
+            }
+
+            try {
+                const pullRequest = await createPullRequest(
+                    result.data.owner,
+                    result.data.repo,
+                    result.data.title,
+                    result.data.body,
+                    result.data.head,
+                    result.data.base
+                );
+
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: JSON.stringify(pullRequest),
+                        },
+                    ],
+                };
+            } catch (error) {
+                console.error(
+                    "[github] Error al crear Pull Request:",
+                    error instanceof Error ? error.message : error
+                );
+
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: "No se pudo crear el Pull Request de GitHub.",
+                        },
+                    ],
+                    isError: true,
+                };
+            }
+        }
+
+        if (name === "create_commit") {
+            const result = CreateCommitInputSchema.safeParse(args);
+
+            if (!result.success) {
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: "Los datos del commit no son válidos.",
+                        },
+                    ],
+                    isError: true,
+                };
+            }
+
+            try {
+                const commit = await createCommit(
+                    result.data.owner,
+                    result.data.repo,
+                    result.data.path,
+                    result.data.message,
+                    result.data.content,
+                    result.data.branch,
+                    result.data.sha
+                );
+
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: JSON.stringify(commit),
+                        },
+                    ],
+                };
+            } catch (error) {
+                console.error(
+                    "[github] Error al crear commit:",
+                    error instanceof Error ? error.message : error
+                );
+
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: "No se pudo crear el commit en GitHub.",
                         },
                     ],
                     isError: true,

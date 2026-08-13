@@ -68,3 +68,58 @@ export const ListPullRequestsInputSchema = z.object({
         .string()
         .min(1, "El nombre del repositorio es obligatorio."),
 });
+
+export const CreatePullRequestInputSchema = z.object({
+    owner: z
+        .string()
+        .min(1, "El propietario del repositorio es obligatorio."),
+
+    repo: z
+        .string()
+        .min(1, "El nombre del repositorio es obligatorio."),
+
+    title: z
+        .string()
+        .min(1, "El título del Pull Request es obligatorio."),
+
+    body: z.string().optional(),
+
+    head: z
+        .string()
+        .min(1, "La rama de origen es obligatoria."),
+
+    base: z
+        .string()
+        .min(1, "La rama de destino es obligatoria."),
+});
+
+export const CreateCommitInputSchema = z.object({
+    owner: z
+        .string()
+        .min(1, "El propietario del repositorio es obligatorio."),
+
+    repo: z
+        .string()
+        .min(1, "El nombre del repositorio es obligatorio."),
+
+    path: z
+        .string()
+        .min(1, "La ruta del archivo es obligatoria."),
+
+    message: z
+        .string()
+        .min(1, "El mensaje del commit es obligatorio."),
+
+    content: z
+        .string()
+        .min(1, "El contenido del archivo es obligatorio."),
+
+    branch: z
+        .string()
+        .min(1, "La rama es obligatoria.")
+        .optional(),
+
+    sha: z
+        .string()
+        .optional(),
+});
