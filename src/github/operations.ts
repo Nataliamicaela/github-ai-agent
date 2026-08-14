@@ -1,13 +1,16 @@
 import { octokit } from "./client.js";
 import { transformGitHubError } from "../errors/handler.js";
+import { retryWithBackoff } from "../utils/retry.js";
 
 export async function listRepositories() {
     try {
-        const response = await octokit.repos.listForAuthenticatedUser({
-            visibility: "all",
-            affiliation: "owner,collaborator,organization_member",
-            per_page: 100,
-        });
+        const response = await retryWithBackoff(() =>
+            octokit.repos.listForAuthenticatedUser({
+                visibility: "all",
+                affiliation: "owner,collaborator,organization_member",
+                per_page: 100,
+            })
+        );
 
         return response.data.map((repo) => ({
             name: repo.name,
@@ -26,11 +29,13 @@ export async function createRepository(
     privateRepo?: boolean
 ) {
     try {
-        const response = await octokit.repos.createForAuthenticatedUser({
-            name,
-            description,
-            private: privateRepo ?? false,
-        });
+        const response = await retryWithBackoff(() =>
+            octokit.repos.createForAuthenticatedUser({
+                name,
+                description,
+                private: privateRepo ?? false,
+            })
+        );
 
         return {
             name: response.data.name,
@@ -50,12 +55,14 @@ export async function createIssue(
     body?: string
 ) {
     try {
-        const response = await octokit.issues.create({
-            owner,
-            repo,
-            title,
-            body,
-        });
+        const response = await retryWithBackoff(() =>
+            octokit.issues.create({
+                owner,
+                repo,
+                title,
+                body,
+            })
+        );
 
         return {
             number: response.data.number,
@@ -73,11 +80,13 @@ export async function listIssues(
     repo: string
 ) {
     try {
-        const response = await octokit.issues.listForRepo({
-            owner,
-            repo,
-            state: "open",
-        });
+        const response = await retryWithBackoff(() =>
+            octokit.issues.listForRepo({
+                owner,
+                repo,
+                state: "open",
+            })
+        );
 
         return response.data.map((issue) => ({
             number: issue.number,
@@ -95,11 +104,13 @@ export async function listPullRequests(
     repo: string
 ) {
     try {
-        const response = await octokit.pulls.list({
-            owner,
-            repo,
-            state: "open",
-        });
+        const response = await retryWithBackoff(() =>
+            octokit.pulls.list({
+                owner,
+                repo,
+                state: "open",
+            })
+        );
 
         return response.data.map((pullRequest) => ({
             number: pullRequest.number,
@@ -121,14 +132,16 @@ export async function createPullRequest(
     base: string
 ) {
     try {
-        const response = await octokit.pulls.create({
-            owner,
-            repo,
-            title,
-            body,
-            head,
-            base,
-        });
+        const response = await retryWithBackoff(() =>
+            octokit.pulls.create({
+                owner,
+                repo,
+                title,
+                body,
+                head,
+                base,
+            })
+        );
 
         return {
             number: response.data.number,
@@ -151,15 +164,17 @@ export async function createCommit(
     sha?: string
 ) {
     try {
-        const response = await octokit.repos.createOrUpdateFileContents({
-            owner,
-            repo,
-            path,
-            message,
-            content: Buffer.from(content, "utf-8").toString("base64"),
-            branch,
-            sha,
-        });
+        const response = await retryWithBackoff(() =>
+            octokit.repos.createOrUpdateFileContents({
+                owner,
+                repo,
+                path,
+                message,
+                content: Buffer.from(content, "utf-8").toString("base64"),
+                branch,
+                sha,
+            })
+        );
 
         return {
             commit_sha: response.data.commit.sha,
