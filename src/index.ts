@@ -27,6 +27,8 @@ import {
     createCommit,
 } from "./github/operations.js";
 
+import { transformGitHubError } from "./errors/handler.js";
+
 import { pingTool } from "./tools/ping.js";
 import { sumTool } from "./tools/sum.js";
 import { slugifyTool } from "./tools/slugify.js";
@@ -156,16 +158,18 @@ async function main() {
                     ],
                 };
             } catch (error) {
+                const transformedError = transformGitHubError(error);
+
                 console.error(
                     "[github] Error al listar repositorios:",
-                    error instanceof Error ? error.message : error
+                    transformedError.message
                 );
 
                 return {
                     content: [
                         {
                             type: "text",
-                            text: "No se pudieron obtener los repositorios de GitHub.",
+                            text: transformedError.message,
                         },
                     ],
                     isError: true,
@@ -204,16 +208,18 @@ async function main() {
                     ],
                 };
             } catch (error) {
+                const transformedError = transformGitHubError(error);
+
                 console.error(
                     "[github] Error al crear repositorio:",
-                    error instanceof Error ? error.message : error
+                    transformedError.message
                 );
 
                 return {
                     content: [
                         {
                             type: "text",
-                            text: "No se pudo crear el repositorio de GitHub.",
+                            text: transformedError.message,
                         },
                     ],
                     isError: true,
@@ -253,16 +259,18 @@ async function main() {
                     ],
                 };
             } catch (error) {
+                const transformedError = transformGitHubError(error);
+
                 console.error(
                     "[github] Error al crear issue:",
-                    error instanceof Error ? error.message : error
+                    transformedError.message
                 );
 
                 return {
                     content: [
                         {
                             type: "text",
-                            text: "No se pudo crear el issue de GitHub.",
+                            text: transformedError.message,
                         },
                     ],
                     isError: true,
@@ -300,16 +308,18 @@ async function main() {
                     ],
                 };
             } catch (error) {
+                const transformedError = transformGitHubError(error);
+
                 console.error(
                     "[github] Error al listar issues:",
-                    error instanceof Error ? error.message : error
+                    transformedError.message
                 );
 
                 return {
                     content: [
                         {
                             type: "text",
-                            text: "No se pudieron obtener los issues de GitHub.",
+                            text: transformedError.message,
                         },
                     ],
                     isError: true,
@@ -347,16 +357,18 @@ async function main() {
                     ],
                 };
             } catch (error) {
+                const transformedError = transformGitHubError(error);
+
                 console.error(
                     "[github] Error al listar Pull Requests:",
-                    error instanceof Error ? error.message : error
+                    transformedError.message
                 );
 
                 return {
                     content: [
                         {
                             type: "text",
-                            text: "No se pudieron obtener los Pull Requests de GitHub.",
+                            text: transformedError.message,
                         },
                     ],
                     isError: true,
@@ -398,16 +410,18 @@ async function main() {
                     ],
                 };
             } catch (error) {
+                const transformedError = transformGitHubError(error);
+
                 console.error(
                     "[github] Error al crear Pull Request:",
-                    error instanceof Error ? error.message : error
+                    transformedError.message
                 );
 
                 return {
                     content: [
                         {
                             type: "text",
-                            text: "No se pudo crear el Pull Request de GitHub.",
+                            text: transformedError.message,
                         },
                     ],
                     isError: true,
@@ -450,16 +464,18 @@ async function main() {
                     ],
                 };
             } catch (error) {
+                const transformedError = transformGitHubError(error);
+
                 console.error(
                     "[github] Error al crear commit:",
-                    error instanceof Error ? error.message : error
+                    transformedError.message
                 );
 
                 return {
                     content: [
                         {
                             type: "text",
-                            text: "No se pudo crear el commit en GitHub.",
+                            text: transformedError.message,
                         },
                     ],
                     isError: true,
