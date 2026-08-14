@@ -1,1 +1,0 @@
-Prueba realizada exitosamente desde Antigravity mediante MCP
