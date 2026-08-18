@@ -45,6 +45,9 @@ describe("retryWithBackoff", () => {
             {
                 response: {
                     status: 403,
+                    headers: {
+                        "x-ratelimit-remaining": "0",
+                    },
                 },
             }
         );
@@ -60,6 +63,18 @@ describe("retryWithBackoff", () => {
 
         await expect(promise).resolves.toBe("éxito");
         expect(operation).toHaveBeenCalledTimes(2);
+    });
+
+    it("no reintenta un 403 que corresponde a permisos y no a rate limiting", async () => {
+        const forbiddenError = Object.assign(new Error("Forbidden"), {
+            status: 403,
+        });
+
+        const operation = vi.fn().mockRejectedValue(forbiddenError);
+        const promise = retryWithBackoff(operation, 3, 1000);
+
+        await expect(promise).rejects.toBe(forbiddenError);
+        expect(operation).toHaveBeenCalledTimes(1);
     });
 
     it("aplica exponential backoff cuando la operación falla varias veces", async () => {

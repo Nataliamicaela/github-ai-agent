@@ -20,7 +20,6 @@ export async function retryWithBackoff<T>(
             );
 
             await wait(delay);
-
             attempt++;
         }
     }
@@ -35,16 +34,26 @@ function isRateLimitError(error: unknown): boolean {
         status?: number;
         response?: {
             status?: number;
+            headers?: Record<string, string | number | undefined>;
         };
+        headers?: Record<string, string | number | undefined>;
     };
 
-    const status =
-        githubError.status ?? githubError.response?.status;
+    const status = githubError.status ?? githubError.response?.status;
 
-    return (
-        status === 403 ||
-        status === 429
-    );
+    if (status === 429) {
+        return true;
+    }
+
+    if (status !== 403) {
+        return false;
+    }
+
+    const headers = githubError.response?.headers ?? githubError.headers;
+    const remaining = headers?.["x-ratelimit-remaining"];
+    const retryAfter = headers?.["retry-after"];
+
+    return remaining === "0" || remaining === 0 || retryAfter !== undefined;
 }
 
 function wait(ms: number): Promise<void> {
