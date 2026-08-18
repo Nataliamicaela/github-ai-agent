@@ -66,7 +66,7 @@ En este proyecto, el AI Agent puede interpretar una solicitud realizada en lengu
 - 🔐 Autenticación mediante GitHub Personal Access Token.
 - 📡 Comunicación entre el Host y el MCP Server mediante `stdio`.
 - 🔎 Integración con MCP Inspector para debugging.
-- 🧪 Suite de 27 tests unitarios con Vitest.
+- 🧪 Suite de **31 tests unitarios** con Vitest.
 - 🚀 Ejecución en modo desarrollo y producción mediante scripts de npm.
 
 ---
@@ -98,11 +98,11 @@ Antigravity actúa como el Host de la aplicación.
 
 Es el entorno desde el cual el usuario interactúa con el agente de inteligencia artificial y donde se configura y ejecuta nuestro MCP Server.
 
-### 🧠 LLM — Cliente MCP
+### 🧠 LLM y Cliente MCP
 
-El modelo de inteligencia artificial interpreta las solicitudes realizadas mediante lenguaje natural y determina qué herramienta del MCP Server debe utilizar.
+El LLM interpreta las solicitudes realizadas mediante lenguaje natural y determina qué herramienta resulta adecuada. El Host utiliza un cliente MCP para comunicarse con el MCP Server y realizar las llamadas correspondientes.
 
-Para tomar esta decisión, utiliza la información proporcionada por las descripciones y schemas de las tools.
+Para tomar esta decisión, el LLM utiliza la información proporcionada por las descripciones y schemas de las tools.
 
 ### ⚙️ MCP Server — GitHub AI Agent
 
@@ -137,10 +137,9 @@ La comunicación se realiza mediante Octokit y requiere autenticación mediante 
                ▼
 ┌─────────────────────────────┐
 │             LLM             │
-│        CLIENTE MCP          │
 │                             │
-│ Interpreta el lenguaje      │
-│ natural y selecciona tools  │
+│ Interpreta lenguaje natural │
+│ y selecciona tools          │
 └──────────────┬──────────────┘
                │
                │ MCP / stdio
@@ -177,6 +176,8 @@ LLM
    ↓
 Selección de la tool
    ↓
+MCP Client
+   ↓
 MCP Server
    ↓
 Validación con Zod
@@ -189,7 +190,7 @@ Resultado
    ↓
 MCP Server
    ↓
-LLM
+MCP Client / LLM
    ↓
 Usuario
 ```
@@ -518,6 +519,8 @@ El proyecto incluye el script:
 npm run inspector
 ```
 
+Este script utiliza la versión actual de MCP Inspector y ejecuta el servidor compilado mediante `stdio`.
+
 Esta herramienta permite verificar:
 
 - que el servidor inicia correctamente;
@@ -533,13 +536,13 @@ Se recomienda comprobar el funcionamiento con MCP Inspector antes de realizar la
 
 ## 🧪 Testing
 
-El proyecto cuenta con una suite de 27 tests unitarios desarrollados con Vitest.
+El proyecto cuenta con una suite de **31 tests unitarios** desarrollados con Vitest.
 
 **Resultado actual:**
 
 - 4 archivos de test
-- 27 tests
-- 27 tests pasando
+- 31 tests
+- 31 tests pasando
 - 0 errores
 
 ### `schemas.test.ts` — 14 tests
@@ -554,9 +557,9 @@ Comprueba la validación de inputs mediante Zod:
 - campos obligatorios y opcionales;
 - límites de título y body.
 
-### `github.test.ts` — 3 tests
+### `github.test.ts` — 6 tests
 
-Prueba las operaciones de GitHub utilizando mocks de Octokit.
+Prueba las operaciones de GitHub utilizando mocks de Octokit, incluyendo `listRepositories` y `createIssue`.
 
 Las llamadas reales a GitHub no se realizan durante estos tests.
 
@@ -570,12 +573,13 @@ Comprueba la transformación de errores:
 - errores de red → `NetworkError`
 - errores inesperados → `GitHubAPIError`
 
-### `retry.test.ts` — 5 tests
+### `retry.test.ts` — 6 tests
 
 Comprueba:
 
 - reintentos ante rate limiting;
 - detección de errores `429`;
+- detección de rate limiting mediante respuestas `403`;
 - exponential backoff;
 - ausencia de retries para errores que no corresponden a rate limiting;
 - límite máximo de reintentos.
