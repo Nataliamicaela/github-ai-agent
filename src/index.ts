@@ -28,6 +28,7 @@ import {
 } from "./github/operations.js";
 
 import { transformGitHubError } from "./errors/handler.js";
+import { ValidationError } from "./errors/index.js";
 
 import { pingTool } from "./tools/ping.js";
 import { sumTool } from "./tools/sum.js";
@@ -41,6 +42,36 @@ import { createPullRequestTool } from "./tools/create-pull-request.js";
 import { createCommitTool } from "./tools/create-commit.js";
 
 export const PingInputSchema = z.object({});
+
+function validationErrorResponse(message: string) {
+    const error = new ValidationError(message);
+
+    return {
+        content: [
+            {
+                type: "text" as const,
+                text: error.message,
+            },
+        ],
+        isError: true,
+    };
+}
+
+function githubErrorResponse(context: string, error: unknown) {
+    const transformedError = transformGitHubError(error);
+
+    console.error(`[github] ${context}:`, transformedError.message);
+
+    return {
+        content: [
+            {
+                type: "text" as const,
+                text: transformedError.message,
+            },
+        ],
+        isError: true,
+    };
+}
 
 async function main() {
     const server = new Server(
@@ -90,15 +121,7 @@ async function main() {
             const result = SumInputSchema.safeParse(args);
 
             if (!result.success) {
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: "Los parámetros a y b deben ser números.",
-                        },
-                    ],
-                    isError: true,
-                };
+                return validationErrorResponse("Los parámetros a y b deben ser números.");
             }
 
             const { a, b } = result.data;
@@ -117,15 +140,7 @@ async function main() {
             const result = SlugifyInputSchema.safeParse(args);
 
             if (!result.success) {
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: "El parámetro text debe ser un string no vacío.",
-                        },
-                    ],
-                    isError: true,
-                };
+                return validationErrorResponse("El parámetro text debe ser un string no vacío.");
             }
 
             const { text } = result.data;
@@ -158,22 +173,7 @@ async function main() {
                     ],
                 };
             } catch (error) {
-                const transformedError = transformGitHubError(error);
-
-                console.error(
-                    "[github] Error al listar repositorios:",
-                    transformedError.message
-                );
-
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: transformedError.message,
-                        },
-                    ],
-                    isError: true,
-                };
+                return githubErrorResponse("Error al listar repositorios", error);
             }
         }
 
@@ -181,15 +181,7 @@ async function main() {
             const result = CreateRepositoryInputSchema.safeParse(args);
 
             if (!result.success) {
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: "Los datos del repositorio no son válidos.",
-                        },
-                    ],
-                    isError: true,
-                };
+                return validationErrorResponse(result.error.issues[0]?.message ?? "Los datos del repositorio no son válidos.");
             }
 
             try {
@@ -208,22 +200,7 @@ async function main() {
                     ],
                 };
             } catch (error) {
-                const transformedError = transformGitHubError(error);
-
-                console.error(
-                    "[github] Error al crear repositorio:",
-                    transformedError.message
-                );
-
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: transformedError.message,
-                        },
-                    ],
-                    isError: true,
-                };
+                return githubErrorResponse("Error al crear repositorio", error);
             }
         }
 
@@ -231,15 +208,7 @@ async function main() {
             const result = CreateIssueInputSchema.safeParse(args);
 
             if (!result.success) {
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: "Los datos del issue no son válidos.",
-                        },
-                    ],
-                    isError: true,
-                };
+                return validationErrorResponse(result.error.issues[0]?.message ?? "Los datos del issue no son válidos.");
             }
 
             try {
@@ -259,22 +228,7 @@ async function main() {
                     ],
                 };
             } catch (error) {
-                const transformedError = transformGitHubError(error);
-
-                console.error(
-                    "[github] Error al crear issue:",
-                    transformedError.message
-                );
-
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: transformedError.message,
-                        },
-                    ],
-                    isError: true,
-                };
+                return githubErrorResponse("Error al crear issue", error);
             }
         }
 
@@ -282,15 +236,7 @@ async function main() {
             const result = ListIssuesInputSchema.safeParse(args);
 
             if (!result.success) {
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: "Los datos del repositorio no son válidos.",
-                        },
-                    ],
-                    isError: true,
-                };
+                return validationErrorResponse(result.error.issues[0]?.message ?? "Los datos del repositorio no son válidos.");
             }
 
             try {
@@ -308,22 +254,7 @@ async function main() {
                     ],
                 };
             } catch (error) {
-                const transformedError = transformGitHubError(error);
-
-                console.error(
-                    "[github] Error al listar issues:",
-                    transformedError.message
-                );
-
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: transformedError.message,
-                        },
-                    ],
-                    isError: true,
-                };
+                return githubErrorResponse("Error al listar issues", error);
             }
         }
 
@@ -331,15 +262,7 @@ async function main() {
             const result = ListPullRequestsInputSchema.safeParse(args);
 
             if (!result.success) {
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: "Los datos del repositorio no son válidos.",
-                        },
-                    ],
-                    isError: true,
-                };
+                return validationErrorResponse(result.error.issues[0]?.message ?? "Los datos del repositorio no son válidos.");
             }
 
             try {
@@ -357,22 +280,7 @@ async function main() {
                     ],
                 };
             } catch (error) {
-                const transformedError = transformGitHubError(error);
-
-                console.error(
-                    "[github] Error al listar Pull Requests:",
-                    transformedError.message
-                );
-
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: transformedError.message,
-                        },
-                    ],
-                    isError: true,
-                };
+                return githubErrorResponse("Error al listar Pull Requests", error);
             }
         }
 
@@ -380,15 +288,7 @@ async function main() {
             const result = CreatePullRequestInputSchema.safeParse(args);
 
             if (!result.success) {
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: "Los datos del Pull Request no son válidos.",
-                        },
-                    ],
-                    isError: true,
-                };
+                return validationErrorResponse(result.error.issues[0]?.message ?? "Los datos del Pull Request no son válidos.");
             }
 
             try {
@@ -410,22 +310,7 @@ async function main() {
                     ],
                 };
             } catch (error) {
-                const transformedError = transformGitHubError(error);
-
-                console.error(
-                    "[github] Error al crear Pull Request:",
-                    transformedError.message
-                );
-
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: transformedError.message,
-                        },
-                    ],
-                    isError: true,
-                };
+                return githubErrorResponse("Error al crear Pull Request", error);
             }
         }
 
@@ -433,15 +318,7 @@ async function main() {
             const result = CreateCommitInputSchema.safeParse(args);
 
             if (!result.success) {
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: "Los datos del commit no son válidos.",
-                        },
-                    ],
-                    isError: true,
-                };
+                return validationErrorResponse(result.error.issues[0]?.message ?? "Los datos del commit no son válidos.");
             }
 
             try {
@@ -464,22 +341,7 @@ async function main() {
                     ],
                 };
             } catch (error) {
-                const transformedError = transformGitHubError(error);
-
-                console.error(
-                    "[github] Error al crear commit:",
-                    transformedError.message
-                );
-
-                return {
-                    content: [
-                        {
-                            type: "text",
-                            text: transformedError.message,
-                        },
-                    ],
-                    isError: true,
-                };
+                return githubErrorResponse("Error al crear commit", error);
             }
         }
 
